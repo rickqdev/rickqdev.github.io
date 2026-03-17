@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://rickqian.com/sitemap.xml
+Sitemap: https://rickqdev.github.io/sitemap.xml
