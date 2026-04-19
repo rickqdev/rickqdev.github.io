@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>钱嘉祺 · AI 游戏策划</title>
+<style>
+  @page { size: A4; margin: 0 }
+
+  :root {
+    --bg:       #0b1018;
+    --panel:    #131c2a;
+    --head:     #0e1520;
+    --gold:     #d4a040;
+    --gold-dim: #6b4e18;
+    --ink:      #e0d8c4;
+    --ink2:     #9daec8;
+    --ink3:     #4e607a;
+    --sep:      rgba(212,160,64,.18);
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box }
+
+  body {
+    font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", system-ui, sans-serif;
+    background: #06080e;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── 工具栏 ── */
+  .toolbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--head);
+    border-bottom: 1px solid var(--gold-dim);
+    padding: 6px 24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .toolbar-label { color: var(--gold); font-size: .7rem; letter-spacing: .1em; font-weight: 700 }
+  .toolbar-spacer { flex: 1 }
+  .toolbar-btn {
+    border: 1px solid var(--gold); padding: 4px 18px;
+    font-size: .72rem; background: transparent; color: var(--gold);
+    cursor: pointer; font-family: inherit; transition: background .15s, color .15s;
+  }
+  .toolbar-btn:hover { background: var(--gold); color: var(--head) }
+
+  /* ── A4 页面 ── */
+  .page {
+    width: 210mm; height: 297mm;
+    margin: 16px auto;
+    background: var(--bg);
+    padding: 8mm 10mm;
+    box-shadow: 0 0 0 2px var(--gold-dim), 0 20px 60px rgba(0,0,0,.9);
+    overflow: hidden;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .page + .page { margin-top: 6px }
+  .page-break { page-break-after: always }
+
+  /* ── Header ── */
+  .header-panel {
+    background: var(--panel);
+    border: 2px solid var(--gold-dim);
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .header-top-bar {
+    background: var(--head);
+    padding: 9px 16px 8px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  .name {
+    font-size: 1.6rem; font-weight: 900;
+    color: var(--gold); letter-spacing: -.02em; line-height: 1;
+  }
+  .name small {
+    font-size: .46em; font-weight: 400;
+    color: var(--ink3); margin-left: .6em; letter-spacing: .08em;
+  }
+  .role {
+    font-size: .73rem; font-weight: 500;
+    color: var(--ink2); margin-top: 4px; letter-spacing: .03em;
+  }
+  .contact-strip {
+    text-align: right; font-size: .67rem;
+    color: var(--ink3); line-height: 1.9;
+  }
+  .contact-strip a { color: var(--ink2); text-decoration: none }
+  .edu-line {
+    padding: 4px 16px 6px;
+    font-size: .67rem; color: var(--ink3);
+    letter-spacing: .02em;
+  }
+
+  /* ── 通用面板 ── */
+  .panel {
+    background: var(--panel);
+    border: 2px solid var(--gold-dim);
+    overflow: hidden; flex-shrink: 0;
+  }
+  .panel.grow { flex: 1 }
+
+  .panel-head {
+    background: rgba(0,0,0,.3);
+    padding: 5px 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .panel-head-title {
+    font-size: .67rem; font-weight: 800;
+    letter-spacing: .18em; text-transform: uppercase;
+    color: var(--gold);
+  }
+  .panel-head-line { flex: 1 }
+  .panel-head-badge {
+    font-size: .6rem; font-weight: 600;
+    color: var(--ink3); letter-spacing: .06em;
+  }
+
+  .panel-body { padding: 6px 14px; display: flex; flex-direction: column }
+
+  /* ── 条目：无任何边框，靠间距分隔 ── */
+  .card {
+    padding: 6px 0;
+    page-break-inside: avoid;
+  }
+  .card + .card { margin-top: 2px }
+
+  .card-head {
+    display: flex; justify-content: space-between;
+    align-items: baseline; margin-bottom: 2px;
+  }
+  .card-title { font-size: .82rem; font-weight: 700; color: var(--ink) }
+  .card-badge {
+    font-size: .63rem; font-weight: 600; color: var(--gold);
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .card-sub {
+    font-size: .7rem; color: var(--ink3);
+    font-style: italic; margin-bottom: 4px;
+  }
+  .card ul { list-style: none }
+  .card li {
+    font-size: .76rem; line-height: 1.58;
+    color: var(--ink2);
+    padding-left: 13px; position: relative;
+    margin-bottom: 2px;
+  }
+  .card li:last-child { margin-bottom: 0 }
+  .card li::before {
+    content: '▸'; position: absolute; left: 0;
+    color: var(--gold); font-size: .72rem; line-height: 1.58;
+  }
+  .m { font-weight: 600; color: var(--ink) }
+
+  /* ── 技能树 ── */
+  .skill-grid { padding: 7px 14px; display: flex; flex-direction: column; gap: 6px }
+  .skill-row { display: flex; align-items: flex-start; gap: 6px; flex-wrap: wrap }
+  .skill-cat {
+    font-size: .63rem; font-weight: 700; color: var(--gold);
+    min-width: 60px; padding-top: 2px; white-space: nowrap;
+  }
+  .tag {
+    display: inline-block; padding: 2px 8px;
+    font-size: .66rem;
+    color: var(--ink2); background: rgba(255,255,255,.05);
+    margin-bottom: 2px;
+  }
+
+  /* ── 教育条 ── */
+  .edu-bar {
+    background: var(--panel);
+    border: 2px solid var(--gold-dim);
+    padding: 6px 14px;
+    display: flex; gap: 28px; flex-shrink: 0;
+  }
+  .edu-item { font-size: .68rem; color: var(--ink3); line-height: 1.55 }
+  .edu-item strong { color: var(--ink2); font-weight: 600; display: block; font-size: .7rem }
+
+  /* ── AI 方法 ── */
+  .method-body { padding: 7px 14px }
+  .method-body ul { list-style: none }
+  .method-body li {
+    font-size: .76rem; line-height: 1.58; color: var(--ink2);
+    padding-left: 13px; position: relative; margin-bottom: 3px;
+  }
+  .method-body li:last-child { margin-bottom: 0 }
+  .method-body li::before {
+    content: '▸'; position: absolute; left: 0;
+    color: var(--gold); font-size: .72rem; line-height: 1.58;
+  }
+
+  @media print {
+    *, *::before, *::after { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { background: var(--bg) }
+    .toolbar { display: none !important }
+    .page { box-shadow: none; margin: 0; width: 210mm; height: 297mm }
+    .page + .page { margin-top: 0 }
+  }
+  @media screen and (max-width: 820px) {
+    .page { width: auto; height: auto; margin: 0; padding: 12px; box-shadow: none; overflow: visible; display: block }
+    .page > * { margin-bottom: 8px }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span class="toolbar-label">钱嘉祺 · 游戏方向 · 2026</span>
+  <div class="toolbar-spacer"></div>
+  <button class="toolbar-btn" onclick="window.print()">↓ 导出 PDF</button>
+</div>
+
+<!-- ════════════════ 第一页 ════════════════ -->
+<div class="page page-break">
+
+  <!-- Header -->
+  <div class="header-panel">
+    <div class="header-top-bar">
+      <div>
+        <div class="name">钱嘉祺 <small>Rick Qian</small></div>
+        <div class="role">AI 游戏策划 · 系统设计 · AI NPC · AIGC 内容管线</div>
+      </div>
+      <div class="contact-strip">
+        <div><a href="mailto:rickqian7701@outlook.com">rickqian7701@outlook.com</a> · <a href="tel:+8618928095163">18928095163</a></div>
+        <div><a href="https://linkedin.com/in/rickqian">linkedin.com/in/rickqian</a> · 上海</div>
+      </div>
+    </div>
+    <div class="edu-line">香港浸会大学 CS · 昆士兰大学 MS（深度强化学习，因疫情辍学）· 6 年游戏/AI 产品经验</div>
+  </div>
+
+  <!-- 独立项目 面板 -->
+  <div class="panel grow">
+    <div class="panel-head">
+      <div class="panel-head-title">独立项目</div>
+      <div class="panel-head-line"></div>
+      <div class="panel-head-badge">2025 – 至今</div>
+    </div>
+    <div class="panel-body">
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">HamsterFlow — AI-Native 策略解谜手游</div>
+          <div class="card-badge">iOS · Alpha</div>
+        </div>
+        <div class="card-sub">验证「AI 离线生产内容 + 运行时零 AI 依赖」的游戏架构。</div>
+        <ul>
+          <li><span class="m">AIGC 关卡批量生成</span>：AI 离线生产关卡 + 模拟验证通过率分布，运行时完全确定性，零网络依赖</li>
+          <li><span class="m">自适应难度（ALA）</span> + <span class="m">经济 / 资源循环 / 元进度</span>：数学模型驱动曲线，产出-消耗模型 + 跨关卡积累 → 能力解锁 → 新策略空间</li>
+          <li>758 行 GDD 定义每个机制约束与验收标准；AI 美术管线（Gemini 出图 + Shader 换色，1 底图 → 8 变体，美术产能 4×）</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">AI 内容管线 — 跨项目标准化验收体系</div>
+          <div class="card-badge">建设中</div>
+        </div>
+        <div class="card-sub">将 AI 内容质量门禁标准化为可复用流程——定义的是生成与发布之间的验收标准，而非生成本身。</div>
+        <ul>
+          <li><span class="m">验收标准</span>：结构化 Brief → 多变体生成 → 评分审核（品牌一致性 / 视觉质量 / 风格连贯性）→ 过审门禁 → 版本化资产发布；同一流程适用于游戏美术、叙事内容、信号筛选等多条管线</li>
+          <li><span class="m">6 项 KPI 度量框架</span>（通过率 / 迭代速度 / 单资产成本 / 审核周期 / 周产量 / 打回原因分布）——可复现质量基线；审核层作为数据采集层反哺 Prompt 版本迭代</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════ 第二页 ════════════════ -->
+<div class="page">
+
+  <!-- 核心经历 -->
+  <div class="panel grow">
+    <div class="panel-head">
+      <div class="panel-head-title">核心经历</div>
+      <div class="panel-head-line"></div>
+      <div class="panel-head-badge">工作经历</div>
+    </div>
+    <div class="panel-body">
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">资深 AI 产品策划 · 追觅科技</div>
+          <div class="card-badge">2025</div>
+        </div>
+        <div class="card-sub">《友友堂》AI 社交模拟手游（对标 Tomodachi Life）· 上海</div>
+        <ul>
+          <li>设计 <span class="m">AI 角色行为系统</span>：Prompt Engineering 参数化星座/MBTI/情绪/价值观；性格 × 情绪 × 关系三层权重矩阵，确保 10+ 角色对话风格差异化，避免千人一面</li>
+          <li>建立 <span class="m">AI 对话质量评估框架</span>：一致性 / 连贯性 / 深度三维评分；自动化回归 + 人工抽检双轨验收；交付 <span class="m">ChinaJoy 2025 试玩版</span></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">核心玩法主策 · 数值商业化 · 触宝集团</div>
+          <div class="card-badge">2024 – 2025</div>
+        </div>
+        <div class="card-sub">Beauty Sort（三消）&amp; Love Rebirth（合并+PvP）· 海外 IAA+IAP · 上海</div>
+        <ul>
+          <li><span class="m">关卡难度三级分层</span>（爽关/卡关/硬卡）：数学模型推导通过率分布，AI 模拟验证流程节奏，商业化节点与体验节点对齐</li>
+          <li>主导<span class="m">程序化关卡生成编辑器</span>研发：关卡生产从手工创作迁移至数据驱动批量生成</li>
+          <li><span class="m">多层商业化架构</span>：订阅通行证 / 限时礼包 / 阶梯定价 / 外观分层；A/B 测试驱动定价，ThinkingData 漏斗分析定位转化瓶颈</li>
+          <li><span class="m">动态难度系统</span>：T1/T2/T3 国家分层 × 行为标签 → 个性化调参 — <span class="m">D1 留存 37%，买量 50 万+</span>，12 人团队，北美/东南亚</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">孵化主策 · 数值系统 · 心动网络</div>
+          <div class="card-badge">2021 – 2024</div>
+        </div>
+        <div class="card-sub">自研 &amp; 中台调优 · 上海</div>
+        <ul>
+          <li>主导《喵遇》（旅行青蛙 × Monopoly GO）：以<span class="m">玩家行为信号作为关系输入</span>（登录频率 / 互动深度 / 响应时延）驱动 NPC 情感状态迁移；缺席触发关系衰减，形成内在回归动机 — <span class="m">D1 留存 39%</span></li>
+          <li><span class="m">AI NPC 情感状态机</span>：多维关系模型（心情 / 记忆 / 好感度）→ 个性化 Prompt 选取；对抗「永远可及」反模式——低摩擦访问消解情感权重，以稀缺性维持情感张力</li>
+          <li><span class="m">经济/养成/战斗三模块系统</span>：产出-消耗模型 + 180 天成长曲线；四类玩家动机映射差异化奖励路径</li>
+          <li><span class="m">竞品逆向工程</span>：拆解 Monopoly GO / Coin Master / Royal Match 经济与商业化模型，提炼可复用设计模式</li>
+          <li><span class="m">数值工具链</span>：Excel → Python 自动化验证 → 可视化报表，调优周期 3 天 → 4 小时</li>
+          <li>跨项目<span class="m">数值中台</span>：9 人团队，3 个产品 0→1；为露娜物语 / 黑帮大亨 / 大当家提供养成与商业化框架重构</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- AI 工作方法 -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-head-title">AI 工作方法</div>
+      <div class="panel-head-line"></div>
+    </div>
+    <div class="method-body">
+      <ul>
+        <li><span class="m">Multi-Agent 编排</span>：6 个产品并行，每产品独立 Claude Code 会话，63 个自动化 Skill，5 个 Cron 任务 24/7 运行</li>
+        <li><span class="m">AIGC 关卡生产管线</span>：离线生成 → AI 模拟验证通过率 → 参数微调 → 批量发布；多模型按任务类型自动路由 + 多层降级链，覆盖 6 个产品 24/7 稳定运行，持续控制推理成本</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 技能树 -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-head-title">技能树</div>
+      <div class="panel-head-line"></div>
+    </div>
+    <div class="skill-grid">
+      <div class="skill-row">
+        <span class="skill-cat">系统设计</span>
+        <span class="tag">经济系统</span><span class="tag">数值模型</span><span class="tag">资源循环</span><span class="tag">养成体系</span><span class="tag">难度曲线</span><span class="tag">商业化 IAP/IAA/订阅</span>
+      </div>
+      <div class="skill-row">
+        <span class="skill-cat">行为设计</span>
+        <span class="tag">玩家动机模型</span><span class="tag">奖励系统</span><span class="tag">留存分析</span><span class="tag">A/B 测试</span><span class="tag">漏斗分析</span>
+      </div>
+      <div class="skill-row">
+        <span class="skill-cat">AI × 游戏</span>
+        <span class="tag">AI NPC 行为系统</span><span class="tag">AIGC 关卡生成</span><span class="tag">Prompt Engineering</span><span class="tag">Function Calling</span><span class="tag">自适应难度</span>
+      </div>
+      <div class="skill-row">
+        <span class="skill-cat">数据 / 工具</span>
+        <span class="tag">ThinkingData</span><span class="tag">SQL</span><span class="tag">Python</span><span class="tag">Claude Code</span><span class="tag">Figma</span><span class="tag">飞书</span>
+      </div>
+      <div class="skill-row">
+        <span class="skill-cat">语言</span>
+        <span class="tag">普通话（母语）</span><span class="tag">英语（工作流畅）</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 教育（极简底部）-->
+  <div class="edu-bar">
+    <div class="edu-item">
+      <strong>香港浸会大学 HKBU</strong>
+      计算机科学学士 · 机器学习 / 数据库 / 软件工程 · 2015–2019
+    </div>
+    <div class="edu-item">
+      <strong>昆士兰大学 UQ</strong>
+      计算机科学硕士 · 深度强化学习 / 推荐算法 · 2019–2020（因疫情辍学）
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
